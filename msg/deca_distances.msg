@@ -1,0 +1,5 @@
+uint8 tags_available
+mqtt_bridge/deca_anchor anchor1
+mqtt_bridge/deca_anchor anchor2
+mqtt_bridge/deca_anchor anchor3
+mqtt_bridge/deca_anchor anchor4

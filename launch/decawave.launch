@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+   <arg name="use_tls" default="false" />
+   <node name="mqtt_bridge" pkg="mqtt_bridge" type="mqtt_bridge_node.py" output="screen">
+      <rosparam command="load" file="$(find mqtt_bridge)/config/decawave_params.yaml" />
+      <rosparam if="$(arg use_tls)" command="load" ns="mqtt" file="$(find mqtt_bridge)/config/tls_params.yaml" />
+   </node>
+   
+   <include file="$(find mqtt_bridge)/launch/deca_decoding.launch"/>
+</launch>

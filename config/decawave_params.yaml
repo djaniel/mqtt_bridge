@@ -1,0 +1,31 @@
+mqtt:
+  client:
+    protocol: 4      # MQTTv311
+  connection:
+    host: 192.168.100.90
+    port: 1883
+    keepalive: 60
+  account:
+    username: dwmuser
+    password: dwmpass
+  private_path: dwm/node
+serializer: json:dumps
+deserializer: json:loads
+bridge:
+  - factory: mqtt_bridge.bridge:MqttToRosBridge
+    msg_type: mqtt_bridge.msg:decawave
+    topic_from: ~/9a2f/uplink/location
+    topic_to: /tag1/position
+  - factory: mqtt_bridge.bridge:MqttToRosBridge
+    msg_type: mqtt_bridge.msg:deca_data
+    topic_from: ~/9a2f/uplink/data
+    topic_to: /tag1/distances_b64
+  - factory: mqtt_bridge.bridge:MqttToRosBridge
+    msg_type: mqtt_bridge.msg:decawave
+    topic_from: ~/cd12/uplink/location
+    topic_to: /tag2/position
+  - factory: mqtt_bridge.bridge:MqttToRosBridge
+    msg_type: mqtt_bridge.msg:deca_data
+    topic_from: ~/cd12/uplink/data
+    topic_to: /tag2/distances_b64
+  

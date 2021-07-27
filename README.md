@@ -11,6 +11,16 @@ mqtt_bridge provides a functionality to bridge between ROS and MQTT in bidirecti
 
 This limitation can be overcome by defining custom bridge class, though.
 
+## Decawave TAGS
+
+### Prerequisites
+All tags have to be running the same firmware. This package has been successfully tested with the factory firmware (FW) image. In order to receive the distance between anchors and tags, it is necessary to flash the dwm-simple project on all tags. The compiling procedure is described on Decawave's DWM1001 firmware user guide. From my own experience I recommend to disable automatic firmware update. Both, the dwm-simple project and the factory firmware are available on the firmware_tag folder.
+
+The network tested included 8 anchors, 2 tags and one Gateway. The configuration procedure of such network is also described on the Decawave's Quick Gateway development guide. All settings and default user's name and password have been set in config/Decawave_params.yaml. To properly set the name of the topics sending the position of the tag, you need to use a MQTT client and make sure they match the ones listed on config/Decawave_params.yaml.
+
+Once this has been set, edit launch/deca_decoding.launch to match the number of tags in your network. Namespaces correspond to the name of the tag. Finally, roslaunch mqtt_bridge decawave.launch will get you acces to the network through ROS.
+
+Plenty of messages have been defined to match the mqtt messages sent by the tags, check msg folder.
 
 ## Demo
 
@@ -103,7 +113,6 @@ launch file:
   </node>
 </launch>
 ```
-
 
 ## Configuration
 

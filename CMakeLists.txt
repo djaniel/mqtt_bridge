@@ -1,9 +1,32 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(mqtt_bridge)
-
-find_package(catkin REQUIRED)
 catkin_python_setup()
-catkin_package()
+find_package(catkin REQUIRED
+   roscpp
+   rospy
+   std_msgs
+   geometry_msgs
+   message_generation 
+   tf2
+   tf2_ros)
+## Generate messages in the 'msg' folder
+ add_message_files(
+    FILES
+    deca_anchor.msg
+    deca_distances.msg
+    deca_data.msg
+    deca_pos.msg
+    decawave.msg
+ )
+ 
+## Generate added messages and services with any dependencies listed here
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+   geometry_msgs
+ )
+
+catkin_package( CATKIN_DEPENDS message_runtime)
 
 
 install(PROGRAMS
