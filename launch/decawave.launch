@@ -1,10 +1,18 @@
 <?xml version="1.0"?>
 <launch>
+   <!-- This is the poistion of the initiator anchor with respect to the map -->
+   <arg name="map_reference_frame" default="map"/>
+   <arg name="position_initiator" default="-4.4 -2.4 0.8 0 0 0 1"/>
+   
    <arg name="use_tls" default="false" />
+   
    <node name="mqtt_bridge" pkg="mqtt_bridge" type="mqtt_bridge_node.py" output="screen">
       <rosparam command="load" file="$(find mqtt_bridge)/config/decawave_params.yaml" />
       <rosparam if="$(arg use_tls)" command="load" ns="mqtt" file="$(find mqtt_bridge)/config/tls_params.yaml" />
    </node>
    
-   <include file="$(find mqtt_bridge)/launch/deca_decoding.launch"/>
+   <include file="$(find mqtt_bridge)/launch/deca_decoding.launch">
+      <arg name="map_reference_frame" value="$(arg map_reference_frame)"/>
+      <arg name="position_initiator" value="$(arg position_initiator)"/>
+   </include>
 </launch>

@@ -1,12 +1,20 @@
 <?xml version="1.0"?>
 <launch>
-   <node pkg="tf2_ros" type="static_transform_publisher" name="tf_static_decawave" args="0 0 0 0 0 0 1 map anchor1"/>
+   <!-- the name of the world's reference frame -->
+   <arg name="map_reference_frame" default="map"/>
+   <arg name="position_initiator" default="0 0 0 0 0 0 1"/>
+   
+   <node pkg="tf2_ros" type="static_transform_publisher" name="tf_static_decawave" args="$(arg position_initiator) $(arg map_reference_frame) anchor1"/>
    
    <group ns="tag1">
-      <node name="decawave_decoding" pkg="mqtt_bridge" type="decawave_decoding.py" output="screen"/>
+      <node name="decawave_decoding" pkg="mqtt_bridge" type="decawave_decoding.py" output="screen">
+         <param name="map_reference_frame" type="string" value="$(arg map_reference_frame)"/>
+      </node>
    </group>
    
    <group ns="tag2">
-      <node name="decawave_decoding" pkg="mqtt_bridge" type="decawave_decoding.py" output="screen"/>
+      <node name="decawave_decoding" pkg="mqtt_bridge" type="decawave_decoding.py" output="screen">
+         <param name="map_reference_frame" type="string" value="$(arg map_reference_frame)"/>
+      </node>
    </group>
 </launch>

@@ -12,8 +12,12 @@ position, the position of the tag as received from the mqtt
    broker.
    
 Publications:
-distances: The result of the decoding process of the base 64 
-   string
+
+distances: The distances and ids of the anchors used in the
+   trilateration process. The result of the decoding process 
+   of the base 64 string sent from the MQTT broker in the 
+   gateway.
+pose: the pose of the tag with respect to the map_frame parameter.
    
 Remark: this node has to be launched in the namespace of the tag.
 """
@@ -23,7 +27,7 @@ import tf_conversions
 import tf2_ros
 from mqtt_bridge.msg import deca_data, deca_distances, decawave
 from std_msgs.msg import Int8
-import geometry_msgs.msg
+from geometry_msgs.msg import Pose, TransformStamped
 from base64 import b64decode
 from rosbridge_library.internal import message_conversion
 
@@ -41,14 +45,19 @@ class DecawaveDecoding():
       
       # It will decode the base 64 distances to a ros message and tf
       self.distances_pub = rospy.Publisher( 'distances', deca_distances, queue_size=10)
+      self.pose_pub = rospy.Publisher( 'pose', Pose, queue_size=10)
       self.tf_br = tf2_ros.TransformBroadcaster()
       
+      self.tf_buffer = tf2_ros.Buffer()
+      self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+      
       self.tag_name = rospy.get_namespace().strip('/')
-      rospy.loginfo('Decoding data for tag: ' + self.tag_name)
+      self.map_frame = rospy.get_param('~map_reference_frame')
+      rospy.loginfo('Decoding data for ' + self.tag_name + ' with respect to ' + self.map_frame )
 
    def position_callback(self, msg):
       # Publish transform from the position of tag
-      t = geometry_msgs.msg.TransformStamped()
+      t = TransformStamped()
       t.header.stamp = rospy.Time.now()
       t.header.frame_id = "anchor1"
       t.child_frame_id =  self.tag_name
@@ -63,7 +72,6 @@ class DecawaveDecoding():
       t.transform.rotation.w = q[3]
       
       self.tf_br.sendTransform(t)
-      
 
    def distances_b64_callback(self, msg):
       # Decode, parse and store data into dictionary.
@@ -82,13 +90,36 @@ class DecawaveDecoding():
       try:
          msg_distances = deca_distances()
          message_conversion.populate_instance(msg_dict, msg_distances) 
-         self.distances_pub.publish (msg_distances)
+         self.distances_pub.publish ( msg_distances )
       except Exception as e:
          rospy.logerr(e)
 
+   def transform_to_map(self):
+      pose = Pose()
+      try:
+         trans = self.tf_buffer.lookup_transform( self.map_frame, self.tag_name, rospy.Time())
+         pose.position.x = trans.transform.translation.x
+         pose.position.y = trans.transform.translation.y
+         pose.position.z = 0
+         pose.orientation.x = 0
+         pose.orientation.y = 0
+         pose.orientation.z = 0
+         pose.orientation.w = 1
+      except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+         pass
+      return pose
+      
+   def tag_position(self):
+      pose = self.transform_to_map()
+      self.pose_pub.publish(pose)
 
 if __name__ == '__main__':
    rospy.init_node('distances_decoding')
    decoder = DecawaveDecoding()
-
-   rospy.spin()
+   
+   # At 10Hz the pose of the tag with respect to the map_frame parameter will be published
+   rate = rospy.Rate(10)
+   while not rospy.is_shutdown():
+      decoder.tag_position()
+      
+      rate.sleep()
